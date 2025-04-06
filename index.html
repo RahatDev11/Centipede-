@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রিয়েলিস্টিক সেন্টিপিড</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: #f8f8f8;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .controls {
+            position: absolute;
+            top: .5rem;
+            left: .5rem;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label>গতি: <input type="range" id="speed" min="1" max="40" value="20"></label><br>
+        <label>সেগমেন্ট: <input type="range" id="segments" min="10" max="60" value="20"></label><br>
+        <button id="reset">রিসেট</button>
+        <p style="font-size: 12px; margin-top: 5px;">যেদিকে আঙ্গুল নিয়ে যাবেন, সেন্টিপিড সেদিকে যাবে</p>
+    </div>
+    <canvas id="centipedeCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('centipedeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Canvas size
+        canvas.width = window.innerWidth * 0.9;
+        canvas.height = window.innerHeight * 0.8;
+
+        // Controls
+        const speedControl = document.getElementById('speed');
+        const segmentsControl = document.getElementById('segments');
+        const resetButton = document.getElementById('reset');
+
+        let centipede = [];
+        let obstacles = [];
+        let target = { x: canvas.width / 2, y: canvas.height / 2 };
+        let moveTarget = false;
+
+        // Colors
+        const BODY_COLOR = '#551800';
+        const LEG_COLOR = '#D97D00';
+        const ANTENNA_COLOR = '#A52A2A';
+
+        function initializeCentipede() {
+            centipede = [];
+            const segmentCount = parseInt(segmentsControl.value);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Create head
+            centipede.push({
+                x: centerX,
+                y: centerY,
+                angle: Math.PI / 2,
+                prevX: centerX,
+                prevY: centerY
+            });
+
+            // Create body segments in a curved line
+            for (let i = 1; i < segmentCount; i++) {
+                const angle = Math.PI / 2 + (i * 0.1);
+                const distance = 15;
+                centipede.push({
+                    x: centerX - Math.cos(angle) * distance * i,
+                    y: centerY - Math.sin(angle) * distance * i,
+                    angle: angle,
+                    prevX: centerX - Math.cos(angle) * distance * i,
+                    prevY: centerY - Math.sin(angle) * distance * i
+                });
+            }
+
+            // Create some obstacles
+            obstacles = [];
+            for (let i = 0; i < 5; i++) {
+                obstacles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 20 + Math.random() * 30
+                });
+            }
+        }
+
+        function drawSegment(x, y, angle, isHead) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            // Segment body
+            const segmentLength = isHead ? 22 : 20;
+            const segmentWidth = isHead ? 16 : 14;
+
+            // Draw the segment body
+            ctx.fillStyle = BODY_COLOR;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, segmentLength/2, segmentWidth/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Add slight shading to give depth
+            const gradient = ctx.createLinearGradient(-segmentLength/2, 0, segmentLength/2, 0);
+            gradient.addColorStop(0, 'rgba(0,0,0,0.2)');
+            gradient.addColorStop(0.5, 'rgba(0,0,0,0)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0.2)');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, segmentLength/2, segmentWidth/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw legs
+            ctx.strokeStyle = LEG_COLOR;
+            ctx.lineWidth = 2;
+
+            // Left legs
+            for (let i = -1; i <= 1; i++) {
+                const legX = i * (segmentLength/3);
+                ctx.beginPath();
+                ctx.moveTo(legX, 0);
+
+                // Create curved legs
+                const legLength = 12 + Math.random() * 4;
+                const controlX = legX - 5;
+                const controlY = -legLength - 5;
+
+                ctx.bezierCurveTo(
+                    legX, -5,
+                    controlX, controlY,
+                    legX - legLength, -legLength
+                );
+                ctx.stroke();
+
+                // Add claws/feet to legs
+                ctx.beginPath();
+                ctx.moveTo(legX - legLength, -legLength);
+                ctx.lineTo(legX - legLength - 3, -legLength - 3);
+                ctx.stroke();
+            }
+
+            // Right legs
+            for (let i = -1; i <= 1; i++) {
+                const legX = i * (segmentLength/3);
+                ctx.beginPath();
+                ctx.moveTo(legX, 0);
+
+                const legLength = 12 + Math.random() * 4;
+                const controlX = legX + 5;
+                const controlY = legLength + 5;
+
+                ctx.bezierCurveTo(
+                    legX, 5,
+                    controlX, controlY,
+                    legX + legLength, legLength
+                );
+                ctx.stroke();
+
+                // Add claws/feet to legs
+                ctx.beginPath();
+                ctx.moveTo(legX + legLength, legLength);
+                ctx.lineTo(legX + legLength + 3, legLength + 3);
+                ctx.stroke();
+            }
+
+            // Draw head details if this is the head
+            if (isHead) {
+                // Eyes
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(-5, -segmentWidth/3, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(5, -segmentWidth/3, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Antennae
+                ctx.strokeStyle = ANTENNA_COLOR;
+                ctx.lineWidth = 1.5;
+
+                // Left antenna
+                ctx.beginPath();
+                ctx.moveTo(-5, -segmentWidth/2);
+                ctx.bezierCurveTo(
+                    -10, -segmentWidth,
+                    -20, -segmentWidth * 1.5,
+                    -15, -segmentWidth * 2
+                );
+                ctx.stroke();
+
+                // Right antenna
+                ctx.beginPath();
+                ctx.moveTo(5, -segmentWidth/2);
+                ctx.bezierCurveTo(
+                    10, -segmentWidth,
+                    20, -segmentWidth * 1.5,
+                    15, -segmentWidth * 2
+                );
+                ctx.stroke();
+
+                // Mandibles
+                ctx.beginPath();
+                ctx.moveTo(-5, 5);
+                ctx.lineTo(-8, 8);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(5, 5);
+                ctx.lineTo(8, 8);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function drawCentipede() {
+            // Draw body segments from tail to head
+            for (let i = centipede.length - 1; i >= 0; i--) {
+                const segment = centipede[i];
+                drawSegment(segment.x, segment.y, segment.angle, i === 0);
+            }
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = '#e0e0e0';
+            obstacles.forEach(obstacle => {
+                ctx.beginPath();
+                ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function avoidObstacles(x, y) {
+            let newX = x;
+            let newY = y;
+            let obstacleForce = { x: 0, y: 0 };
+
+            obstacles.forEach(obstacle => {
+                const dx = x - obstacle.x;
+                const dy = y - obstacle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < obstacle.radius + 30) {
+                    const repelStrength = (obstacle.radius + 30 - distance) / 10;
+                    obstacleForce.x += (dx / distance) * repelStrength;
+                    obstacleForce.y += (dy / distance) * repelStrength;
+                }
+            });
+
+            newX += obstacleForce.x;
+            newY += obstacleForce.y;
+
+            return { x: newX, y: newY };
+        }
+
+        function updateCentipede() {
+            const speed = parseFloat(speedControl.value) * 0.5;
+
+            // Update head position first
+            const head = centipede[0];
+            head.prevX = head.x;
+            head.prevY = head.y;
+
+            // Calculate direction to target
+            const dx = target.x - head.x;
+            const dy = target.y - head.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 5) {
+                // Move head towards target with some randomness
+                const moveX = (dx / distance) * speed + (Math.random() - 0.5) * 0.5;
+                const moveY = (dy / distance) * speed + (Math.random() - 0.5) * 0.5;
+
+                const potentialPos = avoidObstacles(head.x + moveX, head.y + moveY);
+                head.x = potentialPos.x;
+                head.y = potentialPos.y;
+
+                // Update head angle based on movement direction
+                head.angle = Math.atan2(head.y - head.prevY, head.x - head.prevX);
+            }
+
+            // Update body segments
+            for (let i = 1; i < centipede.length; i++) {
+                const segment = centipede[i];
+                const previousSegment = centipede[i - 1];
+
+                segment.prevX = segment.x;
+                segment.prevY = segment.y;
+
+                // Follow previous segment
+                const followDistance = 15;
+                const dx = previousSegment.prevX - segment.x;
+                const dy = previousSegment.prevY - segment.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > followDistance) {
+                    segment.x += (dx / distance) * (distance - followDistance);
+                    segment.y += (dy / distance) * (distance - followDistance);
+
+                    // Update segment angle based on movement
+                    segment.angle = Math.atan2(segment.y - segment.prevY, segment.x - segment.prevX);
+                }
+            }
+
+            // Only generate random target if moveTarget is true and we're not following user input
+            if (moveTarget) {
+                const headToTargetDist = Math.sqrt(
+                    Math.pow(centipede[0].x - target.x, 2) + Math.pow(centipede[0].y - target.y, 2)
+                );
+
+                if (headToTargetDist < 10) {
+                    target.x = Math.random() * canvas.width;
+                    target.y = Math.random() * canvas.height;
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw environment
+            drawObstacles();
+
+            // Update and draw centipede
+            updateCentipede();
+            drawCentipede();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize and start animation
+        function init() {
+            initializeCentipede();
+            moveTarget = true;
+            animate();
+        }
+
+        // Event listeners for both mouse and touch
+        function updateTargetPosition(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            target.x = clientX - rect.left;
+            target.y = clientY - rect.top;
+        }
+
+        // Mouse events
+        canvas.addEventListener('mousedown', (e) => {
+            updateTargetPosition(e.clientX, e.clientY);
+            moveTarget = false;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (e.buttons === 1) {
+                updateTargetPosition(e.clientX, e.clientY);
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            moveTarget = false;  // Keep following the last position
+        });
+
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            updateTargetPosition(e.touches[0].clientX, e.touches[0].clientY);
+            moveTarget = false;
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            updateTargetPosition(e.touches[0].clientX, e.touches[0].clientY);
+        });
+
+        canvas.addEventListener('touchend', () => {
+            moveTarget = false;  // Keep following the last position
+        });
+
+        resetButton.addEventListener('click', init);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.8;
+            initializeCentipede();
+        });
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
