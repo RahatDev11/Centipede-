@@ -20,7 +20,7 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            padding: 30px;
+            padding: 20px;
             position: relative;
         }
         .header {
@@ -30,7 +30,7 @@
         .header h1 {
             color: #2c3e50;
             margin: 0;
-            font-size: 28px;
+            font-size: 24px;
             padding-bottom: 5px;
         }
         .date {
@@ -41,17 +41,19 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         th {
             background-color: #3498db;
             color: white;
-            padding: 12px;
+            padding: 10px;
             text-align: left;
+            font-size: 14px;
         }
         td {
-            padding: 12px;
+            padding: 10px;
             border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
         }
         tr:nth-child(even) {
             background-color: #f8f9fa;
@@ -65,7 +67,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             font-family: inherit;
-            font-size: inherit;
+            font-size: 14px;
             box-sizing: border-box;
         }
         input:focus, textarea:focus {
@@ -74,22 +76,25 @@
             box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
         }
         .signature {
-            margin-top: 50px;
+            margin-top: 30px;
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
         .signature-box {
             width: 45%;
             text-align: center;
+            margin-bottom: 15px;
         }
         .signature-line {
             border-top: 1px solid #333;
-            margin: 0 auto 15px;
+            margin: 0 auto 10px;
             width: 80%;
         }
         .signature-label {
             margin-top: 5px;
             font-weight: bold;
+            font-size: 14px;
         }
         .add-row {
             background-color: #2ecc71;
@@ -99,6 +104,8 @@
             border-radius: 4px;
             cursor: pointer;
             margin-bottom: 15px;
+            font-size: 14px;
+            width: 100%;
         }
         .add-row:hover {
             background-color: #27ae60;
@@ -110,6 +117,7 @@
             border-radius: 4px;
             padding: 5px 8px;
             cursor: pointer;
+            font-size: 12px;
         }
         .remove-row:hover {
             background-color: #c0392b;
@@ -118,14 +126,12 @@
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 15px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
-            margin: 20px 10px 0;
-            display: inline-block;
-            width: 200px;
-            text-align: center;
+            font-size: 14px;
+            margin: 10px 5px;
+            width: calc(100% - 10px);
         }
         .download-btn:hover {
             background-color: #2980b9;
@@ -146,6 +152,42 @@
             text-align: center;
             margin-top: 20px;
         }
+        
+        /* Desktop view styles */
+        @media (min-width: 768px) {
+            .container {
+                padding: 30px;
+            }
+            .header h1 {
+                font-size: 28px;
+            }
+            th, td {
+                padding: 12px;
+                font-size: 16px;
+            }
+            input, textarea {
+                font-size: 16px;
+            }
+            .signature-label {
+                font-size: 16px;
+            }
+            .add-row {
+                width: auto;
+                font-size: 16px;
+            }
+            .download-btn {
+                width: 200px;
+                padding: 12px 20px;
+                font-size: 16px;
+                margin: 20px 10px 0;
+                display: inline-block;
+            }
+        }
+        
+        /* Print and download styles */
+        .print-view {
+            display: none;
+        }
         @media print {
             body {
                 background: none;
@@ -153,17 +195,17 @@
             }
             .container {
                 box-shadow: none;
+                padding: 0;
+                max-width: 100%;
             }
             .add-row, .remove-row, .download-btn {
                 display: none;
             }
-        }
-        .no-print {
-            display: block;
-        }
-        @media print {
             .no-print {
                 display: none;
+            }
+            .print-view {
+                display: block;
             }
         }
     </style>
@@ -233,6 +275,9 @@
         <button class="download-btn download-print" onclick="printForm()">প্রিন্ট করুন</button>
     </div>
 
+    <!-- Hidden container for print/download -->
+    <div id="print-container" style="position: absolute; left: -9999px; top: 0; width: 800px;"></div>
+
     <script>
         // Initialize jsPDF
         const { jsPDF } = window.jspdf;
@@ -276,36 +321,50 @@
             }
         }
 
-        function hideNoPrintElements() {
-            const noPrintElements = document.querySelectorAll('.no-print');
-            noPrintElements.forEach(element => {
-                element.style.display = 'none';
-            });
-        }
-
-        function showNoPrintElements() {
-            const noPrintElements = document.querySelectorAll('.no-print');
-            noPrintElements.forEach(element => {
-                element.style.display = '';
-            });
+        function createDesktopVersion() {
+            const original = document.getElementById('form-to-download');
+            const printContainer = document.getElementById('print-container');
+            
+            // Clone the original form
+            const clone = original.cloneNode(true);
+            clone.id = 'desktop-version';
+            
+            // Apply desktop styles
+            clone.style.width = '800px';
+            clone.style.padding = '30px';
+            clone.style.fontSize = '16px';
+            
+            // Remove no-print elements
+            const noPrintElements = clone.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.remove());
+            
+            // Update table styles
+            const table = clone.querySelector('table');
+            if (table) {
+                table.style.fontSize = '16px';
+                const ths = table.querySelectorAll('th');
+                const tds = table.querySelectorAll('td');
+                ths.forEach(th => th.style.padding = '12px');
+                tds.forEach(td => td.style.padding = '12px');
+            }
+            
+            // Clear and append the clone
+            printContainer.innerHTML = '';
+            printContainer.appendChild(clone);
+            
+            return clone;
         }
 
         function downloadAsImage() {
-            const formElement = document.getElementById('form-to-download');
-            
-            // Hide all elements with no-print class before capturing
-            hideNoPrintElements();
+            const desktopVersion = createDesktopVersion();
             
             // Use html2canvas to capture the form as image
-            html2canvas(formElement, {
+            html2canvas(desktopVersion, {
                 scale: 2,
                 logging: false,
                 useCORS: true,
                 allowTaint: true
             }).then(canvas => {
-                // Show the elements again after capturing
-                showNoPrintElements();
-                
                 // Create download link
                 const link = document.createElement('a');
                 link.download = 'অফিস_সরঞ্জাম_তালিকা_' + new Date().toISOString().slice(0, 10) + '.png';
@@ -315,21 +374,15 @@
         }
 
         function downloadAsPDF() {
-            const formElement = document.getElementById('form-to-download');
-            
-            // Hide all elements with no-print class before capturing
-            hideNoPrintElements();
+            const desktopVersion = createDesktopVersion();
             
             // Use html2canvas to capture the form as image
-            html2canvas(formElement, {
+            html2canvas(desktopVersion, {
                 scale: 2,
                 logging: false,
                 useCORS: true,
                 allowTaint: true
             }).then(canvas => {
-                // Show the elements again after capturing
-                showNoPrintElements();
-                
                 // Create PDF
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -355,14 +408,71 @@
         }
 
         function printForm() {
-            // Hide no-print elements before printing
-            hideNoPrintElements();
+            const desktopVersion = createDesktopVersion();
+            const printWindow = window.open('', '_blank');
             
-            // Print the document
-            window.print();
-            
-            // Show no-print elements again after printing
-            setTimeout(showNoPrintElements, 500);
+            printWindow.document.open();
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>অফিসের প্রয়োজনীয় সরঞ্জামের তালিকা</title>
+                    <style>
+                        body {
+                            font-family: 'Kalpurush', 'Siyam Rupali', Arial, sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .container {
+                            width: 100%;
+                            max-width: 800px;
+                            margin: 0 auto;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 30px;
+                        }
+                        th {
+                            background-color: #3498db;
+                            color: white;
+                            padding: 12px;
+                            text-align: left;
+                        }
+                        td {
+                            padding: 12px;
+                            border-bottom: 1px solid #e0e0e0;
+                        }
+                        .signature {
+                            margin-top: 50px;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        .signature-box {
+                            width: 45%;
+                            text-align: center;
+                        }
+                        .signature-line {
+                            border-top: 1px solid #333;
+                            margin: 0 auto 15px;
+                            width: 80%;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${desktopVersion.outerHTML}
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                                window.close();
+                            }, 200);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
     </script>
 </body>
