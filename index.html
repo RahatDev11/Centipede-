@@ -290,6 +290,25 @@
                 display: block;
             }
         }
+        
+        /* Responsive table for download/print */
+        .responsive-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .responsive-table th,
+        .responsive-table td {
+            padding: 8px;
+            font-size: 12px;
+            word-break: break-word;
+        }
+        .responsive-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        .responsive-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -551,31 +570,58 @@
             }
         }
 
-        function createDesktopVersion() {
+        function createPrintableVersion() {
             const original = document.getElementById('form-to-download');
             const printContainer = document.getElementById('print-container');
             
             // Clone the original form
             const clone = original.cloneNode(true);
-            clone.id = 'desktop-version';
-            
-            // Apply desktop styles
-            clone.style.width = '800px';
-            clone.style.padding = '30px';
-            clone.style.fontSize = '16px';
+            clone.id = 'printable-version';
+            clone.style.width = '100%';
+            clone.style.padding = '20px';
+            clone.style.boxSizing = 'border-box';
             
             // Remove no-print elements
             const noPrintElements = clone.querySelectorAll('.no-print');
             noPrintElements.forEach(el => el.remove());
             
-            // Update table styles
+            // Convert inputs to text
+            const inputs = clone.querySelectorAll('input');
+            inputs.forEach(input => {
+                const span = document.createElement('span');
+                span.textContent = input.value;
+                input.parentNode.replaceChild(span, input);
+            });
+            
+                        
+            // Make table responsive
             const table = clone.querySelector('table');
             if (table) {
-                table.style.fontSize = '16px';
+                table.className = 'responsive-table';
+                
+                // Calculate optimal font size based on row count
+                const rowCount = table.querySelectorAll('tbody tr').length;
+                let fontSize = 12;
+                
+                if (rowCount > 20) fontSize = 8;
+                else if (rowCount > 15) fontSize = 9;
+                else if (rowCount > 10) fontSize = 10;
+                
+                table.style.fontSize = fontSize + 'px';
+                
+                // Adjust padding based on row count
+                const padding = Math.max(4, 8 - Math.floor(rowCount / 10));
                 const ths = table.querySelectorAll('th');
                 const tds = table.querySelectorAll('td');
-                ths.forEach(th => th.style.padding = '12px');
-                tds.forEach(td => td.style.padding = '12px');
+                
+                ths.forEach(th => th.style.padding = padding + 'px');
+                tds.forEach(td => td.style.padding = padding + 'px');
+            }
+            
+            // Adjust signature section
+            const signature = clone.querySelector('.signature');
+            if (signature) {
+                signature.style.marginTop = '40px';
             }
             
             // Clear and append the clone
@@ -586,16 +632,20 @@
         }
 
         function downloadAsImage() {
-            saveToHistory(); // Save to local storage before downloading
+            saveToHistory();
             
-            const desktopVersion = createDesktopVersion();
+            const printableVersion = createPrintableVersion();
             
             // Use html2canvas to capture the form as image
-            html2canvas(desktopVersion, {
+            html2canvas(printableVersion, {
                 scale: 2,
                 logging: false,
                 useCORS: true,
-                allowTaint: true
+                allowTaint: true,
+                width: printableVersion.offsetWidth,
+                height: printableVersion.offsetHeight,
+                windowWidth: printableVersion.scrollWidth,
+                windowHeight: printableVersion.scrollHeight
             }).then(canvas => {
                 // Create download link
                 const link = document.createElement('a');
@@ -606,35 +656,34 @@
         }
 
         function downloadAsPDF() {
-            saveToHistory(); // Save to local storage before downloading
+            saveToHistory();
             
-            const desktopVersion = createDesktopVersion();
+            const printableVersion = createPrintableVersion();
             
             // Use html2canvas to capture the form as image
-            html2canvas(desktopVersion, {
+            html2canvas(printableVersion, {
                 scale: 2,
                 logging: false,
                 useCORS: true,
-                allowTaint: true
+                allowTaint: true,
+                width: printableVersion.offsetWidth,
+                height: printableVersion.offsetHeight,
+                windowWidth: printableVersion.scrollWidth,
+                windowHeight: printableVersion.scrollHeight
             }).then(canvas => {
                 // Create PDF
                 const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm'
+                });
+                
+                // Calculate dimensions
                 const imgWidth = 210; // A4 width in mm
-                const pageHeight = 295; // A4 height in mm
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
                 
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-                
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
+                // Add image to PDF
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 
                 // Download PDF
                 pdf.save('অফিস_সরঞ্জাম_তালিকা_' + new Date().toISOString().slice(0, 10) + '.pdf');
@@ -642,9 +691,9 @@
         }
 
         function printForm() {
-            saveToHistory(); // Save to local storage before printing
+            saveToHistory();
             
-            const desktopVersion = createDesktopVersion();
+            const printableVersion = createPrintableVersion();
             const printWindow = window.open('', '_blank');
             
             printWindow.document.open();
@@ -664,23 +713,25 @@
                             max-width: 800px;
                             margin: 0 auto;
                         }
-                        table {
+                        .responsive-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin-bottom: 30px;
                         }
-                        th {
+                        .responsive-table th,
+                        .responsive-table td {
+                            padding: 6px;
+                            font-size: 12px;
+                            word-break: break-word;
+                        }
+                        .responsive-table th {
                             background-color: #3498db;
                             color: white;
-                            padding: 12px;
-                            text-align: left;
                         }
-                        td {
-                            padding: 12px;
-                            border-bottom: 1px solid #e0e0e0;
+                        .responsive-table tr:nth-child(even) {
+                            background-color: #f8f9fa;
                         }
                         .signature {
-                            margin-top: 50px;
+                            margin-top: 40px;
                             display: flex;
                             justify-content: space-between;
                         }
@@ -690,13 +741,17 @@
                         }
                         .signature-line {
                             border-top: 1px solid #333;
-                            margin: 0 auto 15px;
+                            margin: 0 auto 10px;
                             width: 80%;
+                        }
+                        @page {
+                            size: A4;
+                            margin: 10mm;
                         }
                     </style>
                 </head>
                 <body>
-                    ${desktopVersion.outerHTML}
+                    ${printableVersion.outerHTML}
                     <script>
                         window.onload = function() {
                             setTimeout(function() {
