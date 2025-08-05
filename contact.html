@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>যোগাযোগ - নাহিদ হোসেন</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- ===== হেডার সেকশন ===== -->
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">Nahid<span>.dev</span></a>
+                <ul class="nav-menu" id="nav-menu">
+                    <li class="nav-item"><a href="index.html" class="nav-link">হোম</a></li>
+                    <li class="nav-item"><a href="features.html" class="nav-link">ফিচার</a></li>
+                    <li class="nav-item"><a href="services.html" class="nav-link">সার্ভিসেস</a></li>
+                    <li class="nav-item"><a href="portfolio.html" class="nav-link">পোর্টফোলিও</a></li>
+                    <li class="nav-item"><a href="pricing.html" class="nav-link">মূল্য তালিকা</a></li>
+                    <li class="nav-item"><a href="contact.html" class="nav-link active">যোগাযোগ</a></li>
+                </ul>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="contact" class="contact-section section-padding bg-light">
+            <div class="container">
+                 <h2 class="reveal-on-scroll fade-in">
+                     <span class="section-subtitle">যোগাযোগ করুন</span>
+                     আপনার প্রজেক্ট নিয়ে কথা বলতে আমি প্রস্তুত
+                 </h2>
+                <div class="contact-wrapper">
+                    <div class="contact-info reveal-on-scroll slide-left">
+                        <h3>যোগাযোগের তথ্য</h3>
+                        <p><i class="fas fa-map-marker-alt"></i> লেভেল ৮, সুট ৮০১, এবিসি টাওয়ার,<br> গুলশান ২, ঢাকা-১২১২, বাংলাদেশ</p>
+                        <p><i class="fas fa-phone-alt"></i> +৮৮০ ১২৩৪ ৫৬৭৮৯০</p>
+                        <p><i class="fas fa-envelope"></i> hello@nahid.dev</p>
+                         <p><i class="fas fa-clock"></i> শনি - বৃহস্পতি: সকাল ১০:০০ - সন্ধ্যা ৭:০০</p>
+                         <h3 class="mt-4">সোশ্যাল মিডিয়া</h3>
+                          <div class="social-links" style="justify-content: flex-start; gap: 10px;">
+                              <a href="#" aria-label="Facebook" style="color: var(--primary-color); border-color: var(--primary-color);"><i class="fab fa-facebook-f"></i></a>
+                              <a href="#" aria-label="Twitter" style="color: var(--primary-color); border-color: var(--primary-color);"><i class="fab fa-twitter"></i></a>
+                              <a href="#" aria-label="LinkedIn" style="color: var(--primary-color); border-color: var(--primary-color);"><i class="fab fa-linkedin-in"></i></a>
+                               <a href="#" aria-label="GitHub" style="color: var(--primary-color); border-color: var(--primary-color);"><i class="fab fa-github"></i></a>
+                          </div>
+                    </div>
+                    <div class="contact-form reveal-on-scroll slide-right">
+                        <h3>আমাকে মেসেজ পাঠান</h3>
+                        <form action="#" id="contactForm">
+                            <div class="form-group">
+                                <input type="text" name="name" placeholder="আপনার পুরো নাম" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" name="email" placeholder="আপনার ইমেইল অ্যাড্রেস" required>
+                            </div>
+                             <div class="form-group">
+                                <input type="text" name="subject" placeholder="আলোচনার বিষয়" required>
+                             </div>
+                             <div class="form-group">
+                                <textarea name="message" placeholder="আপনার বিস্তারিত বার্তা লিখুন..." rows="6" required></textarea>
+                             </div>
+                            <button type="submit" class="btn btn-primary">বার্তা পাঠান <i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+             <div class="map-section reveal-on-scroll fade-in">
+                 <iframe
+                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.880732875796!2d90.41331297510995!3d23.78735067864399!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c7a097d849cd%3A0xb2b708e911f33045!2sGulshan%202%2C%20Dhaka!5e0!3m2!1sen!2sbd!4v1698151710305!5m2!1sen!2sbd"
+                     width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                     referrerpolicy="no-referrer-when-downgrade" title="Our Location Map">
+                 </iframe>
+             </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+             <a href="index.html" class="logo">Nahid<span>.dev</span></a>
+             <div class="footer-links">
+                 <a href="#about">আমার সম্পর্কে</a>
+                 <a href="services.html">সার্ভিসেস</a>
+                 <a href="portfolio.html">পোর্টফোলিও</a>
+                 <a href="#blog">ব্লগ</a>
+                 <a href="#">প্রাইভেসি পলিসি</a>
+                 <a href="#">টার্মস অফ সার্ভিস</a>
+             </div>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="#" aria-label="Dribbble"><i class="fab fa-dribbble"></i></a>
+            </div>
+            <p class="footer-copyright">কপিরাইট © ২০২৪ | নাহিদ হোসেন | সর্বস্বত্ব সংরক্ষিত।</p>
+        </div>
+    </footer>
+
+     <a href="#" class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
+         <i class="fas fa-chevron-up"></i>
+     </a>
+
+    <script src="script.js"></script>
+</body>
+</html>
